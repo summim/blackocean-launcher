@@ -51,7 +51,7 @@ app.whenReady().then(async () => {
   win.webContents.once('did-finish-load', async () => {
     send('settings', settings);
     send('config', { serverName: cfg.SERVER_NAME, gameDir: cfg.GAME_DIR, version: app.getVersion(),
-      msLogin: !!cfg.MS_CLIENT_ID && !cfg.MS_CLIENT_ID.startsWith('00000000') });
+      msLogin: true });
     account = await auth.autoLogin();
     setState({ account: publicAccount() });
     checkLauncherUpdate();
@@ -89,6 +89,14 @@ ipcMain.handle('openExternal', (e, url) => shell.openExternal(url));
 
 ipcMain.handle('login', async () => {
   loginCancelled = false;
+  if (!auth.hasAzureClient()) {
+    // 공식 런처 클라이언트 ID 로 로그인 창 띄우기 (Azure 등록 불필요)
+    const ms = await auth.liveLogin(win);
+    account = await auth.minecraftFromMs(ms, 'live');
+    await auth.save(account);
+    setState({ account: publicAccount() });
+    return publicAccount();
+  }
   const dc = await auth.startDeviceCode();
   send('deviceCode', { code: dc.user_code, url: dc.verification_uri });
   shell.openExternal(dc.verification_uri);

@@ -9,6 +9,60 @@ const cfg = require('./config');
 const MS = 'https://login.microsoftonline.com/consumers/oauth2/v2.0';
 const SCOPE = 'XboxLive.signin offline_access';
 
+// ---- 방식 B: 공식 마인크래프트 런처와 같은 클라이언트 ID 로 login.live.com 로그인 (CmlLib 등 대부분의 외부 런처가 쓰는 방식) ----
+// Azure 앱 등록·Mojang 승인 없이 바로 동작. 설정에 MS_CLIENT_ID 를 넣으면 방식 A(기기 코드)로 전환됨.
+const LIVE_CLIENT_ID = '00000000402b5328';
+const LIVE_SCOPE = 'service::user.auth.xboxlive.com::MBI_SSL';
+const LIVE_AUTHORIZE = 'https://login.live.com/oauth20_authorize.srf';
+const LIVE_TOKEN = 'https://login.live.com/oauth20_token.srf';
+const LIVE_REDIRECT = 'https://login.live.com/oauth20_desktop.srf';
+
+function hasAzureClient() {
+  return !!cfg.MS_CLIENT_ID && !cfg.MS_CLIENT_ID.startsWith('00000000-');
+}
+
+/** 로그인 창을 띄워 코드를 받고 토큰으로 바꿈 */
+async function liveLogin(parent) {
+  const { BrowserWindow } = require('electron');
+  const url = LIVE_AUTHORIZE + '?' + new URLSearchParams({
+    client_id: LIVE_CLIENT_ID, response_type: 'code', scope: LIVE_SCOPE,
+    redirect_uri: LIVE_REDIRECT, response_mode: 'query', prompt: 'select_account',
+  }).toString();
+  const code = await new Promise((resolve, reject) => {
+    const w = new BrowserWindow({
+      width: 520, height: 720, parent, modal: true, autoHideMenuBar: true, title: '마이크로소프트 로그인',
+      webPreferences: { partition: 'persist:mslogin', contextIsolation: true, nodeIntegration: false },
+    });
+    let done = false;
+    const check = (u) => {
+      if (done || !u.startsWith(LIVE_REDIRECT)) return;
+      const q = new URL(u).searchParams;
+      done = true;
+      if (q.get('code')) resolve(q.get('code'));
+      else reject(new Error('로그인 실패: ' + (q.get('error_description') || q.get('error') || '알 수 없음')));
+      setTimeout(() => { if (!w.isDestroyed()) w.close(); }, 50);
+    };
+    w.webContents.on('will-redirect', (e, u) => check(u));
+    w.webContents.on('will-navigate', (e, u) => check(u));
+    w.webContents.on('did-navigate', (e, u) => check(u));
+    w.on('closed', () => { if (!done) { done = true; reject(new Error('로그인 창을 닫았어요')); } });
+    w.loadURL(url);
+  });
+  const r = await postForm(LIVE_TOKEN, {
+    client_id: LIVE_CLIENT_ID, code, grant_type: 'authorization_code', redirect_uri: LIVE_REDIRECT, scope: LIVE_SCOPE,
+  });
+  if (!r.ok) throw new Error('토큰 교환 실패: ' + (r.json.error_description || r.status));
+  return r.json;
+}
+
+async function liveRefresh(refreshToken) {
+  const r = await postForm(LIVE_TOKEN, {
+    client_id: LIVE_CLIENT_ID, refresh_token: refreshToken, grant_type: 'refresh_token', scope: LIVE_SCOPE,
+  });
+  if (!r.ok) throw new Error('자동 로그인 만료: 다시 로그인해 주세요');
+  return r.json;
+}
+
 async function postForm(url, form) {
   const res = await fetch(url, {
     method: 'POST',
@@ -92,9 +146,10 @@ async function refreshMs(refreshToken) {
 }
 
 /** MS 액세스 토큰 → Minecraft 계정 */
-async function minecraftFromMs(msToken) {
+async function minecraftFromMs(msToken, source = 'msa') {
+  const prefix = source === 'live' ? '' : 'd=';     // Azure AD 토큰만 "d=" 접두어
   const xbl = await postJson('https://user.auth.xboxlive.com/user/authenticate', {
-    Properties: { AuthMethod: 'RPS', SiteName: 'user.auth.xboxlive.com', RpsTicket: 'd=' + msToken.access_token },
+    Properties: { AuthMethod: 'RPS', SiteName: 'user.auth.xboxlive.com', RpsTicket: prefix + msToken.access_token },
     RelyingParty: 'http://auth.xboxlive.com', TokenType: 'JWT',
   });
   if (!xbl.ok) throw new Error('Xbox Live 인증 실패 (' + xbl.status + ')');
@@ -122,7 +177,7 @@ async function minecraftFromMs(msToken) {
   return {
     name: p.name, uuid: p.id, accessToken: mc.json.access_token, xuid: uhs,
     expiresAt: Date.now() + (mc.json.expires_in || 86400) * 1000 - 60000,
-    refreshToken: msToken.refresh_token, source: 'msa',
+    refreshToken: msToken.refresh_token, source,
   };
 }
 
@@ -134,8 +189,8 @@ async function autoLogin() {
     if (saved.source === 'official') return await officialLauncherAccount();
     if (saved.source === 'offline') return await offlineAccount(saved.name);
     if (!saved.refreshToken) return null;
-    const ms = await refreshMs(saved.refreshToken);
-    const acc = await minecraftFromMs(ms);
+    const ms = saved.source === 'live' ? await liveRefresh(saved.refreshToken) : await refreshMs(saved.refreshToken);
+    const acc = await minecraftFromMs(ms, saved.source);
     await save(acc);
     return acc;
   } catch {
@@ -182,4 +237,4 @@ async function offlineAccount(name) {
   return acc;
 }
 
-module.exports = { startDeviceCode, pollDeviceCode, minecraftFromMs, autoLogin, save, clearSaved, officialLauncherAccount, offlineAccount, loadSaved };
+module.exports = { liveLogin, hasAzureClient, startDeviceCode, pollDeviceCode, minecraftFromMs, autoLogin, save, clearSaved, officialLauncherAccount, offlineAccount, loadSaved };

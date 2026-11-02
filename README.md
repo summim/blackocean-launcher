@@ -20,8 +20,13 @@
 올리기 전에 `pack.config.json` 의 `rawBase` 를 `https://raw.githubusercontent.com/<깃허브아이디>/blackocean-pack/main` 으로 바꾸고
 `node tools/build-manifest.js` 를 한 번 실행하세요.
 
-### ② 마이크로소프트 로그인용 클라이언트 ID
-접속기가 직접 로그인하려면 Azure 에 앱을 하나 등록해야 해요 (무료).
+### ② 마이크로소프트 로그인 (기본: 설정 없이 동작)
+기본값은 공식 마인크래프트 런처와 같은 클라이언트 ID(`00000000402b5328`)로 login.live.com 에 로그인하는 방식이에요
+(CmlLib 등 대부분의 외부 런처가 쓰는 방법). **아무 설정 없이 바로 돼요.**
+단, 이건 Mojang 의 ID 를 빌려 쓰는 거라 언젠가 막힐 수 있어요. 오래 운영할 거면 아래처럼 자기 앱을 등록해 두는 게 안전해요.
+
+#### (선택) 자기 클라이언트 ID 등록
+Azure 에 앱을 하나 등록해야 해요 (무료).
 1. https://portal.azure.com → "앱 등록(App registrations)" → "새 등록"
    - 이름: BlackOcean Launcher / 지원 계정 유형: **개인 Microsoft 계정만** (또는 모든 계정)
    - 리디렉션 URI 는 비워 둠

@@ -1,0 +1,22 @@
+# 태그(v1.0.1 같은)를 올리면 GitHub 가 윈도우에서 접속기를 빌드해 릴리스에 자동으로 올립니다.
+#   git tag v1.0.1 && git push origin v1.0.1   (package.json 의 version 도 같이 올려 두세요)
+name: release
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - name: Build & publish installer
+        run: npx electron-builder --win --x64 --publish always
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

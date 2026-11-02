@@ -54,7 +54,8 @@
       {
         "provider": "github",
         "owner": "summim",
-        "repo": "blackocean-launcher"
+        "repo": "blackocean-launcher",
+        "releaseType": "release"
       }
     ]
   }

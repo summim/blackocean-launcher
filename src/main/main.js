@@ -50,7 +50,8 @@ app.whenReady().then(async () => {
   createWindow();
   win.webContents.once('did-finish-load', async () => {
     send('settings', settings);
-    send('config', { serverName: cfg.SERVER_NAME, gameDir: cfg.GAME_DIR, version: app.getVersion() });
+    send('config', { serverName: cfg.SERVER_NAME, gameDir: cfg.GAME_DIR, version: app.getVersion(),
+      msLogin: !!cfg.MS_CLIENT_ID && !cfg.MS_CLIENT_ID.startsWith('00000000') });
     account = await auth.autoLogin();
     setState({ account: publicAccount() });
     checkLauncherUpdate();

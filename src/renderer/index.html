@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>블랙오션 접속기</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="sea"></div>
+<div class="app">
+  <header>
+    <div class="brand">
+      <div class="logo">⚓</div>
+      <div>
+        <div class="title">블랙오션</div>
+        <div class="sub">해적 항해 서버 접속기 <span id="ver"></span></div>
+      </div>
+    </div>
+    <div class="account" id="account">
+      <span class="muted">로그인 안 됨</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="notes">
+      <h3>소식</h3>
+      <div id="notes" class="notes-body">서버 소식이 여기에 나와요.</div>
+    </section>
+    <section class="panel">
+      <div id="deviceCode" class="device hidden">
+        <div>브라우저가 열리면 아래 코드를 입력하세요</div>
+        <div class="code" id="codeText">—</div>
+        <div class="row">
+          <button class="ghost" id="copyCode">코드 복사</button>
+          <button class="ghost" id="openLink">로그인 페이지 열기</button>
+          <button class="ghost" id="cancelLogin">취소</button>
+        </div>
+      </div>
+      <div class="status" id="status">준비됨</div>
+      <div class="bar"><div class="fill" id="fill"></div></div>
+      <div class="actions">
+        <button class="big" id="play">게임 시작</button>
+        <button class="ghost" id="settingsBtn">설정</button>
+      </div>
+      <div class="log" id="log"></div>
+    </section>
+  </main>
+
+  <div id="settings" class="modal hidden">
+    <div class="box">
+      <h3>설정</h3>
+      <label>메모리 (MB) <input type="number" id="ram" min="2048" max="32768" step="512"></label>
+      <label><input type="checkbox" id="closeOnLaunch"> 게임이 뜨면 접속기 숨기기</label>
+      <div class="row">
+        <button class="ghost" id="openDir">게임 폴더 열기</button>
+        <button class="ghost" id="loginOfficial">공식 런처 계정 가져오기</button>
+        <button class="ghost" id="logout">로그아웃</button>
+      </div>
+      <div class="row right"><button class="big small" id="closeSettings">닫기</button></div>
+    </div>
+  </div>
+  <div id="updateBar" class="updatebar hidden">접속기 새 버전이 준비됐어요. <button id="installUpdate">지금 적용</button></div>
+</div>
+<script src="renderer.js"></script>
+</body>
+</html>

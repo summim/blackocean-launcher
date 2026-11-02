@@ -1,0 +1,61 @@
+{
+  "name": "blackocean-launcher",
+  "productName": "BlackOcean",
+  "version": "1.0.0",
+  "description": "블랙오션 해적 서버 접속기",
+  "main": "src/main/main.js",
+  "author": "빵뿌0",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win"
+  },
+  "devDependencies": {
+    "electron": "33.4.11",
+    "electron-builder": "25.1.8"
+  },
+  "dependencies": {
+    "electron-updater": "6.3.9",
+    "adm-zip": "0.5.16"
+  },
+  "build": {
+    "appId": "kr.bbangbbu.blackocean",
+    "productName": "BlackOcean",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "artifactName": "BlackOcean-Setup-${version}.exe",
+      "shortcutName": "블랙오션 접속기",
+      "differentialPackage": false,
+      "installerIcon": "assets/icon.ico",
+      "uninstallerIcon": "assets/icon.ico"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "summim",
+        "repo": "blackocean-launcher"
+      }
+    ]
+  }
+}

@@ -13,12 +13,12 @@ function addLog(t) {
 function renderAccount() {
   const a = state.account;
   $('account').innerHTML = a
-    ? `<img src="https://crafatar.com/avatars/${a.uuid}?size=56&overlay" alt=""><b>${a.name}</b>${a.source === 'official' ? '<span class="muted">(공식 런처 계정)</span>' : ''}`
+    ? `<img src="https://crafatar.com/avatars/${a.uuid}?size=56&overlay" alt=""><b>${a.name}</b>${a.source === 'official' ? '<span class="muted">(공식 런처 계정)</span>' : a.source === 'offline' ? '<span class="muted">(오프라인 테스트)</span>' : ''}`
     : `<span class="muted">로그인 안 됨</span>`;
   const play = $('play');
   if (state.running) { play.textContent = '실행 중'; play.disabled = true; }
   else if (state.busy) { play.textContent = '준비 중...'; play.disabled = true; }
-  else if (!a) { play.textContent = msLogin ? '마이크로소프트 로그인' : '공식 런처 계정으로 로그인'; play.disabled = false; }
+  else if (!a) { play.textContent = msLogin ? '마이크로소프트 로그인' : '로그인 (설정)'; play.disabled = false; }
   else { play.textContent = '게임 시작'; play.disabled = false; }
 }
 
@@ -52,10 +52,10 @@ async function guard(fn) {
 $('play').onclick = () => guard(async () => {
   if (!state.account) {
     if (!msLogin) {
-      // 아직 자체 로그인(클라이언트 ID)이 준비 안 됨 → 공식 런처에 로그인된 계정을 빌려 씀
-      setStatus('공식 런처 계정 확인 중...');
-      await L.loginOfficial();
-      setStatus('로그인 완료. 게임 시작을 눌러 주세요');
+      // 아직 자체 로그인(클라이언트 ID)이 준비 안 됨 → 설정 창의 오프라인 테스트 로그인 안내
+      $('settings').classList.remove('hidden');
+      $('offlineName').focus();
+      setStatus('설정 창에서 오프라인 테스트 로그인을 해 주세요');
       return;
     }
     setStatus('마이크로소프트 로그인 중...');
@@ -76,6 +76,7 @@ $('closeSettings').onclick = () => guard(async () => {
 });
 $('openDir').onclick = () => L.openGameDir();
 $('loginOfficial').onclick = () => guard(async () => { await L.loginOfficial(); $('settings').classList.add('hidden'); setStatus('공식 런처 계정으로 로그인했어요'); });
+$('loginOffline').onclick = () => guard(async () => { await L.loginOffline($('offlineName').value); $('settings').classList.add('hidden'); setStatus('오프라인 테스트 계정으로 로그인했어요'); });
 $('logout').onclick = () => guard(async () => { await L.logout(); $('settings').classList.add('hidden'); });
 $('installUpdate').onclick = () => L.installLauncherUpdate();
 renderAccount();

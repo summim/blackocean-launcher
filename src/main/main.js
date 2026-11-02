@@ -104,6 +104,11 @@ ipcMain.handle('loginOfficial', async () => {
   setState({ account: publicAccount() });
   return publicAccount();
 });
+ipcMain.handle('loginOffline', async (e, name) => {
+  account = await auth.offlineAccount(name);
+  setState({ account: publicAccount() });
+  return publicAccount();
+});
 ipcMain.handle('logout', async () => {
   account = null;
   await auth.clearSaved();

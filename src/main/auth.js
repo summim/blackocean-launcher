@@ -132,6 +132,7 @@ async function autoLogin() {
   if (!saved) return null;
   try {
     if (saved.source === 'official') return await officialLauncherAccount();
+    if (saved.source === 'offline') return await offlineAccount(saved.name);
     if (!saved.refreshToken) return null;
     const ms = await refreshMs(saved.refreshToken);
     const acc = await minecraftFromMs(ms);
@@ -147,14 +148,18 @@ async function autoLogin() {
  * 공식 런처를 최근에 켠 적이 있어야 토큰이 살아 있어요.
  */
 async function officialLauncherAccount() {
-  const file = path.join(process.env.APPDATA || '', '.minecraft', 'launcher_accounts.json');
-  let data;
-  try { data = JSON.parse(await fs.readFile(file, 'utf8')); } catch {
-    throw new Error('공식 런처 계정 파일을 찾지 못했어요. 공식 런처로 한 번 로그인한 뒤 다시 시도하세요');
+  const mc = path.join(process.env.APPDATA || '', '.minecraft');
+  let data = null;
+  for (const f of ['launcher_accounts_microsoft_store.json', 'launcher_accounts.json']) {
+    try { data = JSON.parse(await fs.readFile(path.join(mc, f), 'utf8')); break; } catch {}
   }
+  if (!data) throw new Error('공식 런처 계정 파일을 찾지 못했어요. 공식 런처로 한 번 로그인한 뒤 다시 시도하세요');
   const accounts = Object.values(data.accounts || {});
   const active = (data.activeAccountLocalId && data.accounts[data.activeAccountLocalId]) || accounts[0];
-  if (!active || !active.accessToken || !active.minecraftProfile) throw new Error('공식 런처에 로그인된 계정이 없어요');
+  if (!active || !active.minecraftProfile) throw new Error('공식 런처에 로그인된 계정이 없어요');
+  if (!active.accessToken) {
+    throw new Error('요즘 공식 런처는 로그인 토큰을 파일에 남기지 않아서 빌려 쓸 수 없어요. 자체 로그인(클라이언트 ID)이 준비될 때까지는 설정의 "오프라인 테스트 로그인"을 쓰세요');
+  }
   const prof = await fetch('https://api.minecraftservices.com/minecraft/profile', {
     headers: { Authorization: 'Bearer ' + active.accessToken },
   });
@@ -165,4 +170,16 @@ async function officialLauncherAccount() {
   return acc;
 }
 
-module.exports = { startDeviceCode, pollDeviceCode, minecraftFromMs, autoLogin, save, clearSaved, officialLauncherAccount, loadSaved };
+/** 오프라인 테스트 계정 (서버 online-mode=false 일 때만 들어가짐). 닉네임으로 고정 UUID 생성 */
+async function offlineAccount(name) {
+  name = String(name || '').trim();
+  if (!/^[A-Za-z0-9_]{3,16}$/.test(name)) throw new Error('닉네임은 영문·숫자·_ 3~16자로 입력하세요');
+  const md5 = require('crypto').createHash('md5').update('OfflinePlayer:' + name, 'utf8').digest();
+  md5[6] = (md5[6] & 0x0f) | 0x30;   // UUID v3
+  md5[8] = (md5[8] & 0x3f) | 0x80;
+  const acc = { name, uuid: md5.toString('hex'), accessToken: '0', xuid: '', source: 'offline' };
+  await save(acc);
+  return acc;
+}
+
+module.exports = { startDeviceCode, pollDeviceCode, minecraftFromMs, autoLogin, save, clearSaved, officialLauncherAccount, offlineAccount, loadSaved };

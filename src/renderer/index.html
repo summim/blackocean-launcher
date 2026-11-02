@@ -51,6 +51,10 @@
       <h3>설정</h3>
       <label>메모리 (MB) <input type="number" id="ram" min="2048" max="32768" step="512"></label>
       <label><input type="checkbox" id="closeOnLaunch"> 게임이 뜨면 접속기 숨기기</label>
+      <div class="offline">
+        <div class="muted small">오프라인 테스트 (서버가 online-mode=false 일 때만 접속됨)</div>
+        <div class="row"><input type="text" id="offlineName" placeholder="닉네임 (영문/숫자 3~16자)" maxlength="16"><button class="ghost" id="loginOffline">오프라인 테스트 로그인</button></div>
+      </div>
       <div class="row">
         <button class="ghost" id="openDir">게임 폴더 열기</button>
         <button class="ghost" id="loginOfficial">공식 런처 계정 가져오기</button>

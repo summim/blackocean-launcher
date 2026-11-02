@@ -3,6 +3,7 @@ contextBridge.exposeInMainWorld('launcher', {
   login: () => ipcRenderer.invoke('login'),
   cancelLogin: () => ipcRenderer.invoke('cancelLogin'),
   loginOfficial: () => ipcRenderer.invoke('loginOfficial'),
+  loginOffline: (name) => ipcRenderer.invoke('loginOffline', name),
   logout: () => ipcRenderer.invoke('logout'),
   play: () => ipcRenderer.invoke('play'),
   killGame: () => ipcRenderer.invoke('killGame'),

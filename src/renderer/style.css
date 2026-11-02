@@ -45,3 +45,6 @@ button.ghost { background:rgba(255,255,255,.07); }
 label { display:flex; align-items:center; gap:10px; font-size:14px; }
 input[type=number] { width:120px; background:rgba(255,255,255,.08); border:1px solid var(--line); color:var(--text); padding:6px 8px; border-radius:8px; font-family:inherit; }
 .updatebar { position:fixed; left:28px; right:28px; bottom:14px; background:#17314f; border:1px solid var(--line); border-radius:12px; padding:10px 14px; display:flex; justify-content:space-between; align-items:center; font-size:14px; }
+.offline { border:1px dashed var(--line); border-radius:10px; padding:10px; display:flex; flex-direction:column; gap:6px; }
+.small { font-size:12px; }
+input[type=text] { flex:1; background:rgba(255,255,255,.08); border:1px solid var(--line); color:var(--text); padding:8px 10px; border-radius:8px; font-family:inherit; }

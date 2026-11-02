@@ -45,11 +45,14 @@ npm run dist
 ```
 → `dist/BlackOcean-Setup-<버전>.exe` 와 `dist/latest.yml` 이 생겨요.
 
-## 3. 접속기 새 버전 배포
-1. `package.json` 의 `version` 올리기 (예 1.0.1)
-2. `npm run dist`
-3. GitHub `blackocean-launcher` → Releases → 새 릴리스 (태그 `v1.0.1`) → `BlackOcean-Setup-1.0.1.exe` 와 `latest.yml` 두 파일 첨부 → 게시
+## 3. 접속기 새 버전 배포 (GitHub 가 대신 빌드)
+1. `package.json` 의 `version` 올리기 (예 1.0.1) → commit → push
+2. GitHub `blackocean-launcher` → **Actions** 탭 → `release` → **Run workflow** 버튼
+   (또는 `git tag v1.0.1 && git push origin v1.0.1`)
+3. 3~4분 뒤 Releases 에 `BlackOcean-Setup-1.0.1.exe` 와 `latest.yml` 이 자동으로 올라가요.
 4. 시청자 접속기는 다음 실행 때 자동으로 받아서 "지금 적용" 버튼이 떠요.
+
+시청자에게 줄 설치 파일 주소: https://github.com/summim/blackocean-launcher/releases/latest
 
 ## 4. 모드 바꾸기
 `blackocean-pack` 저장소의 README 참고 (jar 넣고 `node tools/build-manifest.js` → push 끝).

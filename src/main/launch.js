@@ -94,7 +94,7 @@ async function launch({ versionId, javaExe, account, ramMb, server, onLog, onExi
   const jvm = substitute(flattenArgs(vj.arguments.jvm, features), vars);
   const game = substitute(flattenArgs(vj.arguments.game, features), vars);
   const extra = [
-    `-Xmx${ramMb}M`, `-Xms${Math.min(1024, ramMb)}M`,
+    `-Xmx${ramMb}M`, `-Xms${ramMb}M`, // 시작부터 최대 메모리를 잡아 GC(메모리 청소) 횟수를 줄임
     '-Dfile.encoding=UTF-8', '-Dstdout.encoding=UTF-8', '-Dstderr.encoding=UTF-8',
     '-XX:+UseG1GC', '-XX:+UnlockExperimentalVMOptions', '-XX:G1NewSizePercent=20', '-XX:MaxGCPauseMillis=50',
   ];

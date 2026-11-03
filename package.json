@@ -1,7 +1,7 @@
 {
   "name": "blackocean-launcher",
   "productName": "BlackOcean",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "블랙오션 해적 서버 접속기",
   "main": "src/main/main.js",
   "author": "빵뿌0",
